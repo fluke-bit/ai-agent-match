@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Match</title>
+  <meta name="description" content="Find the right AI agent for what you need. Search Grok Bots, Muse agents, and others with ease-of-setup scores.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Minimal custom styles if needed; most is Tailwind */
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+      <!-- Logo SVG approximating the gradient A with puzzle piece -->
+      <svg class="w-10 h-10 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#38BDF8;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#14B8A6;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M20 85 L50 15 L80 85 Z" fill="url(#grad)" />
+        <path d="M38 62 L50 42 L62 62 L55 62 L55 72 L45 72 L45 62 Z" fill="white" opacity="0.9"/>
+        <circle cx="50" cy="55" r="4" fill="white"/>
+      </svg>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">AI Agent Match</h1>
+        <p class="text-sm text-slate-500">Find the right AI agent for what you need</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    <!-- Intro -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-5 text-slate-600">
+      <strong class="text-slate-900">AI Agent Match</strong> helps you discover agents that fit the task you have in mind.
+      Search by what you want to do, then filter by platform. Each result shows how easy it is to set up so you can get started with confidence.
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm">
+      <input
+        type="search"
+        id="search"
+        placeholder="What do you want help with? (e.g. research, email, coding, calendar)"
+        class="w-full px-4 py-3 text-base border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        autofocus
+      >
+
+      <!-- Platform filters -->
+      <div class="flex flex-wrap gap-2 mt-4" id="filters">
+        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-teal-500 text-white" data-platform="all">All platforms</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Grok Bots">Grok Bots</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Muse">Muse</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Other">Other</button>
+      </div>
+
+      <!-- Example buttons -->
+      <div class="mt-4 text-sm text-slate-500">
+        Try:
+        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="research papers">research papers</button>
+        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="email inbox">email inbox</button>
+        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="coding help">coding help</button>
+        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="daily summary">daily summary</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="space-y-4"></div>
+  </main>
+
+  <footer class="text-center py-8 text-sm text-slate-400">
+    AI Agent Match · Helping you feel comfortable choosing and using AI agents
+  </footer>
+
+  <script>
+    // ---------- Safety helpers (community data is untrusted) ----------
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+    const safeUrl = u => /^https:\/\//i.test(String(u || "")) ? String(u) : "#";
+
+    // Fallback sample data (used if the index fails to load)
+    const fallbackAgents = [
+      {
+        name: "Research Analyst",
+        tagline: "Deep research and summarization",
+        description: "Excellent at finding information, summarizing long documents, and answering complex questions with sources.",
+        category: "Research",
+        ease: 1,
+        installs: 1240,
+        openUrl: "https://x.ai/bot",
+        source: "Grok Bots"
+      },
+      {
+        name: "Inbox Manager",
+        tagline: "Triage and draft emails",
+        description: "Helps sort your inbox, draft replies, and keep important messages from getting lost.",
+        category: "Productivity",
+        ease: 2,
+        installs: 980,
+        openUrl: "https://x.ai/bot",
+        source: "Grok Bots"
+      },
+      {
+        name: "Coding Specialist",
+        tagline: "Write, debug, and explain code",
+        description: "Strong at helping with programming tasks, explaining errors, and suggesting improvements.",
+        category: "Coding",
+        ease: 1,
+        installs: 2100,
+        openUrl: "https://x.ai/bot",
+        source: "Grok Bots"
+      },
+      {
+        name: "Daily Briefing",
+        tagline: "Morning summary of calendar + email",
+        description: "Creates a simple daily overview so you know what matters today.",
+        category: "Productivity",
+        ease: 1,
+        installs: 1560,
+        openUrl: "https://x.ai/bot",
+        source: "Grok Bots"
+      },
+      {
+        name: "Goal Tracker",
+        tagline: "Stay on top of personal goals",
+        description: "Helps break goals into steps and check in regularly so progress feels manageable.",
+        category: "Personal",
+        ease: 1,
+        installs: 870,
+        openUrl: "https://x.ai/bot",
+        source: "Grok Bots"
+      },
+      {
+        name: "Creative Muse",
+        tagline: "Brainstorming and writing help",
+        description: "Good at generating ideas, outlining content, and refining drafts in a friendly way.",
+        category: "Creative",
+        ease: 1,
+        installs: 720,
+        openUrl: "https://x.ai/bot",
+        source: "Muse"
+      },
+      {
+        name: "Travel Planner",
+        tagline: "Bookings and itineraries",
+        description: "Helps research trips, compare options, and organize bookings with less stress.",
+        category: "Lifestyle",
+        ease: 2,
+        installs: 640,
+        openUrl: "https://x.ai/bot",
+        source: "Muse"
+      },
+      {
+        name: "Community Helper",
+        tagline: "Shared agent templates",
+        description: "A popular community-built agent for general tasks and quick experiments.",
+        category: "General",
+        ease: 1,
+        installs: 510,
+        openUrl: "https://x.ai/bot",
+        source: "Other"
+      }
+    ];
+
+    let agents = [];
+    const easeLabels = { 1: "Easy", 2: "Medium", 3: "Advanced" };
+    let currentPlatform = "all";
+    let currentQuery = "";
+    const PAGE_SIZE = 40;          // results shown at a time (keeps phones fast)
+    let shownCount = PAGE_SIZE;
+
+    function easeClass(ease) {
+      if (ease === 1) return "bg-emerald-100 text-emerald-800";
+      if (ease === 2) return "bg-amber-100 text-amber-800";
+      return "bg-rose-100 text-rose-800";
+    }
+
+    function render(agentsToShow) {
+      const container = document.getElementById("results");
+      if (!agentsToShow.length) {
+        container.innerHTML = '<div class="text-center text-slate-500 py-12">No agents matched that. Try a different phrase, filter, or one of the examples above.</div>';
+        return;
+      }
+      const visible = agentsToShow.slice(0, shownCount);
+      const cards = visible.map(a => {
+        const ease = Number(a.ease);
+        const installs = Number(a.installs) || 0;
+        const installsText = installs > 0 ? ` · ${installs.toLocaleString()} installs` : "";
+        const listed = a.listedOn ? ` · via ${esc(a.listedOn)}` : "";
+        const license = a.license ? ` · License: ${esc(a.license)}` : "";
+        const note = a.setupNote
+          ? `<p class="mt-3 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"><strong>Copy into Muse:</strong> ${esc(a.setupNote)}</p>`
+          : "";
+        return `
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <h2 class="text-lg font-semibold tracking-tight">${esc(a.name)}</h2>
+          <div class="flex flex-wrap items-center gap-2 mt-2 text-xs">
+            <span class="px-2.5 py-0.5 rounded-full font-medium ${easeClass(ease)}">${esc(easeLabels[ease] || "Unknown")} setup</span>
+            <span class="text-slate-500">${esc(a.source)}${installsText}${listed}${license}</span>
+          </div>
+          <p class="mt-2 font-medium text-slate-800">${esc(a.tagline)}</p>
+          <p class="mt-1 text-slate-600 text-sm">${esc(a.description)}</p>
+          ${note}
+          <a href="${esc(safeUrl(a.openUrl))}" target="_blank" rel="noopener noreferrer" class="inline-block mt-4 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">${esc(a.cta || "View / Add Agent")}</a>
+        </div>`;
+      }).join("");
+      const remaining = agentsToShow.length - visible.length;
+      const more = remaining > 0
+        ? `<button id="show-more" class="w-full py-3 text-sm font-semibold text-teal-700 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50">Show more (${remaining.toLocaleString()} left)</button>`
+        : "";
+      container.innerHTML = cards + more;
+      const moreBtn = document.getElementById("show-more");
+      if (moreBtn) {
+        moreBtn.addEventListener("click", () => { shownCount += PAGE_SIZE; applyFilters(false); });
+      }
+    }
+
+    function rankValue(a) {
+      // Prefer the pipeline's usefulness score; fall back to installs
+      return (Number(a.usefulness) || 0) * 1e6 + (Number(a.installs) || 0);
+    }
+
+    function applyFilters(resetPaging = true) {
+      if (resetPaging) shownCount = PAGE_SIZE;
+      let filtered = [...agents];
+      if (currentPlatform !== "all") {
+        filtered = filtered.filter(a => a.source === currentPlatform);
+      }
+      if (currentQuery.trim()) {
+        const words = currentQuery.toLowerCase().split(/\s+/).filter(Boolean);
+        filtered = filtered
+          .map(a => {
+            const integrations = Array.isArray(a.integrations) ? a.integrations.join(" ") : "";
+            const text = `${a.name || ""} ${a.tagline || ""} ${a.description || ""} ${a.category || ""} ${integrations}`.toLowerCase();
+            let score = 0;
+            words.forEach(word => { if (text.includes(word)) score++; });
+            return { agent: a, score };
+          })
+          .filter(x => x.score > 0)
+          .sort((a, b) => b.score - a.score || rankValue(b.agent) - rankValue(a.agent))
+          .map(x => x.agent);
+      } else {
+        filtered.sort((a, b) => rankValue(b) - rankValue(a));
+      }
+      render(filtered);
+    }
+
+    // Load the index built by build_index.py (served next to this page).
+    // Change INDEX_URL to your S3/CDN address if you host the file elsewhere.
+    async function loadAgents() {
+      const INDEX_URL = "agents-index.json";
+      try {
+        const res = await fetch(INDEX_URL, { cache: "no-cache" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data && data.agents);
+        if (!Array.isArray(list)) throw new Error("Unexpected index format");
+        agents = list.filter(a => a && typeof a === "object" && a.name);
+        if (!agents.length) throw new Error("Index is empty");
+      } catch (err) {
+        console.warn("Could not load agents index, using fallback data:", err);
+        agents = fallbackAgents;
+      }
+      applyFilters();
+    }
+
+    // Event listeners
+    const input = document.getElementById("search");
+    input.addEventListener("input", () => {
+      currentQuery = input.value;
+      applyFilters();
+    });
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => {
+          b.classList.remove("bg-teal-500", "text-white");
+          b.classList.add("bg-slate-100", "text-slate-700");
+        });
+        btn.classList.remove("bg-slate-100", "text-slate-700");
+        btn.classList.add("bg-teal-500", "text-white");
+        currentPlatform = btn.dataset.platform;
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll(".example-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        input.value = btn.dataset.q;
+        currentQuery = btn.dataset.q;
+        applyFilters();
+      });
+    });
+
+    // Start
+    loadAgents();
+  </script>
+</body>
+</html>
