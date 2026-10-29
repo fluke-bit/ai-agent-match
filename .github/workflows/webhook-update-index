@@ -1,0 +1,24 @@
+name: Daily data refresh
+
+# Triggers an Amplify build once a day so agents-index.json is rebuilt.
+# Needs the repository secret AMPLIFY_WEBHOOK_URL (Amplify console >
+# App settings > Build settings > Incoming webhooks).
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC
+  workflow_dispatch:       # "Run workflow" button in the Actions tab
+
+jobs:
+  trigger-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Amplify incoming webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.AMPLIFY_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::error::AMPLIFY_WEBHOOK_URL secret is not set"
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST -d '{}' \
+            -H "Content-Type: application/json" "$WEBHOOK_URL"
