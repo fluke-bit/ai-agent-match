@@ -1,0 +1,18 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - python3 --version
+        - python3 -m pip install --quiet requests
+    build:
+      commands:
+        # Fetches the sources and writes agents-index.json next to index.html.
+        # If every source fails the script exits 1, the build fails, and the
+        # previously deployed version stays live.
+        - python3 build_index.py
+  artifacts:
+    baseDirectory: .
+    files:
+      - index.html
+      - agents-index.json
