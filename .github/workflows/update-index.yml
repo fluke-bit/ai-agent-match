@@ -1,8 +1,8 @@
 name: Update agents index
 
 on:
-  schedule:
-    - cron: "0 9 * * *"   # every day at 9:00 UTC (about 5am Eastern)
+  # schedule:
+    # - cron: "0 9 * * *"   # every day at 9:00 UTC (about 5am Eastern)
   workflow_dispatch:       # lets you also run it by hand
 
 permissions:
