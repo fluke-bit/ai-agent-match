@@ -1,4 +1,4 @@
-name: Daily data refresh
+name: Webhook Daily data refresh
 
 # Triggers an Amplify build once a day so agents-index.json is rebuilt.
 # Needs the repository secret AMPLIFY_WEBHOOK_URL (Amplify console >
