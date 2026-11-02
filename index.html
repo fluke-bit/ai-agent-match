@@ -7,71 +7,328 @@
   <meta name="description" content="Find the right AI agent for what you need. Search Grok Bots, Muse agents, and others with ease-of-setup scores.">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Minimal custom styles if needed; most is Tailwind */
+    /* ================= Theme colors (change these to restyle the whole site) ================= */
+    :root {
+      --blue: #1d4ed8;          /* primary: strong blue */
+      --blue-hover: #1e40af;    /* darker blue on hover */
+      --blue-outline: #1e3a8a;  /* distinct dark-blue outline for primary items */
+      --box-bg: #f1f3f5;        /* light grey for boxes (much lighter than the background) */
+      --box-field: #e6e9ed;     /* slightly deeper light grey for the search field */
+      --box-outline: #5b6675;   /* outline so boxes never blend into the background */
+    }
+
+    /* ================= Gradient grey background ================= */
+    html { background-color: #a9b0ba; }
+    body { position: relative; min-height: 100vh; }
+    /* Fixed layer behind everything (more reliable on phones than background-attachment: fixed) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(160deg, #d3d8de 0%, #a9b0ba 50%, #7d8693 100%);
+    }
+
+    /* ================= Light-grey outlined boxes ================= */
+    .box {
+      background: var(--box-bg);
+      border: 2px solid var(--box-outline);
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+    }
+    .site-header {
+      background: var(--box-bg);
+      border-bottom: 2px solid var(--box-outline);
+    }
+
+    /* ================= Intro box: text and box 30% smaller than before ================= */
+    .intro-box {
+      padding: 0.7rem;              /* was 1rem */
+      font-size: 0.7rem;            /* was 1rem */
+      line-height: 1.4;
+      color: #334155;
+      border-radius: 0.7rem;        /* was 1rem */
+    }
+    /* "List of agents refreshed daily": set apart from the description */
+    .intro-note {
+      margin-top: 0.7rem;
+      padding-top: 0.5rem;
+      border-top: 1.5px solid #aab3c0;
+      font-weight: 700;
+      color: var(--blue-outline);
+    }
+
+    /* ================= Search bar: 20% larger + unfolds right to left on load ================= */
+    @keyframes search-unfold {
+      from { clip-path: inset(0 0 0 100%); opacity: 0.4; }
+      to   { clip-path: inset(0 0 0 0);    opacity: 1; }
+    }
+    .search-wrap {
+      /* 'backwards' keeps it hidden during the delay and removes the clip afterward,
+         so the focus ring is never cut off. */
+      animation: search-unfold 1000ms cubic-bezier(0.22, 1, 0.36, 1) 350ms backwards;
+    }
+    .search-input {
+      width: 100%;
+      font-size: 1.2rem;            /* 20% larger than the original 16px */
+      padding: 0.9rem 1.2rem;       /* 20% larger than the original 12px / 16px */
+      background: var(--box-field);
+      border: 2px solid var(--box-outline);
+      border-radius: 0.75rem;
+      color: #0f172a;
+    }
+    .search-input::placeholder { color: #64748b; }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.35);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .search-wrap { animation: none; }
+    }
+
+    /* ================= Chips (platform filters and examples) ================= */
+    .chip {
+      padding: 0.375rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: #e2e6ea;
+      color: #334155;
+      border: 2px solid #8a94a3;
+      cursor: pointer;
+    }
+    .chip:hover { background: #d5dae0; }
+    .chip.is-active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue-outline);
+    }
+    .chip-sm {
+      padding: 0.2rem 0.75rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+      margin-top: 0.5rem;           /* space between rows when the buttons wrap */
+    }
+
+    /* ================= Primary button: strong blue with a distinct outline ================= */
+    .btn-primary {
+      display: block;
+      text-align: center;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+      border: 2px solid var(--blue-outline);
+      border-radius: 0.6rem;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--blue-hover); }
+    .btn-primary:focus-visible { outline: 3px solid var(--blue-outline); outline-offset: 2px; }
+
+    /* ================= Square agent blocks ================= */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));   /* 2 per row on phones */
+      gap: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .agent-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }  /* 3 per row on larger screens */
+    }
+    .agent-card {
+      aspect-ratio: 1 / 1;          /* makes every block a square */
+      overflow: hidden;             /* keeps the square a square, never grows with text */
+      display: flex;
+      flex-direction: column;
+      padding: 0.625rem;
+      transition: box-shadow 0.15s;
+    }
+    .agent-card:hover { box-shadow: 0 6px 14px rgba(15, 23, 42, 0.28); }
+    @media (min-width: 640px) { .agent-card { padding: 1rem; } }
+
+    .agent-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      color: #0f172a;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    @media (min-width: 640px) { .agent-name { font-size: 1.05rem; } }
+
+    .agent-badges {
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;   /* setup badge on the left, downloads on the right */
+      gap: 0.25rem;
+    }
+    .agent-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+    }
+    .agent-dl svg { width: 0.7rem; height: 0.7rem; flex-shrink: 0; }
+    /* Say just "Easy" on phones to save room; "Easy setup" on larger screens */
+    .setup-word { display: none; }
+    @media (min-width: 640px) { .setup-word { display: inline; } }
+    .ease {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+    }
+    .ease-1 { background: #d1fae5; color: #065f46; }
+    .ease-2 { background: #fef3c7; color: #92400e; }
+    .ease-3 { background: #ffe4e6; color: #9f1239; }
+
+    .agent-desc {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      line-height: 1.3;
+      color: #475569;
+    }
+    @media (min-width: 640px) { .agent-desc { font-size: 0.8125rem; } }
+    .agent-desc p {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;        /* 2 lines on phones */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    @media (min-width: 640px) { .agent-desc p { -webkit-line-clamp: 3; } }  /* 3 lines on larger screens */
+
+    .agent-meta {
+      display: none;
+      font-size: 0.6875rem;
+      color: #64748b;
+      margin-top: 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (min-width: 640px) { .agent-meta { display: block; } }
+
+    .agent-btn {
+      margin-top: 0.4rem;
+      padding: 0.35rem 0.25rem;
+      font-size: 0.75rem;
+    }
+    @media (min-width: 640px) { .agent-btn { font-size: 0.875rem; padding: 0.45rem 0.5rem; } }
+
+    /* Text for screen readers only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #1e293b;
+      padding: 3rem 0;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased">
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+<body class="text-slate-900 antialiased">
+  <header class="site-header sticky top-0 z-20">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-      <!-- Logo SVG approximating the gradient A with puzzle piece -->
-      <svg class="w-10 h-10 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Logo: round badge with two squared A's side by side that also read as an M -->
+      <svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AAM logo">
         <defs>
           <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#38BDF8;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#14B8A6;stop-opacity:1" />
+            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+          </linearGradient>
+          <radialGradient id="shine" cx="32%" cy="26%" r="75%">
+            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.35" />
+            <stop offset="60%" style="stop-color:#ffffff;stop-opacity:0" />
+          </radialGradient>
+          <linearGradient id="ink" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#bae6fd;stop-opacity:1" />
           </linearGradient>
         </defs>
-        <path d="M20 85 L50 15 L80 85 Z" fill="url(#grad)" />
-        <path d="M38 62 L50 42 L62 62 L55 62 L55 72 L45 72 L45 62 Z" fill="white" opacity="0.9"/>
-        <circle cx="50" cy="55" r="4" fill="white"/>
+        <!-- Badge -->
+        <circle cx="50" cy="50" r="46" fill="url(#grad)" stroke="#1e3a8a" stroke-width="4" />
+        <circle cx="50" cy="50" r="46" fill="url(#shine)" />
+        <circle cx="50" cy="50" r="39" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round" />
+        <!-- Crossbars of the two A's -->
+        <path d="M25.2 54 L46.8 54 M53.2 54 L74.8 54" fill="none" stroke="#7dd3fc" stroke-width="3.5" stroke-linecap="square" />
+        <!-- Two squared, flat-topped A's sharing the middle leg, so together they also read as an M -->
+        <path d="M22 66 L30 36 L42 36 L50 66 L58 36 L70 36 L78 66" fill="none" stroke="url(#ink)" stroke-width="5.5" stroke-linecap="square" stroke-linejoin="bevel" />
+        <!-- Spark above the last peak: the "match" -->
+        <circle cx="71" cy="25" r="6" fill="none" stroke="#7dd3fc" stroke-opacity="0.45" stroke-width="1.5" />
+        <circle cx="71" cy="25" r="3" fill="#7dd3fc" />
       </svg>
       <div>
         <h1 class="text-xl font-bold tracking-tight">AI Agent Match</h1>
-        <p class="text-sm text-slate-500">Find the right AI agent for what you need</p>
+        <p class="text-sm text-slate-600">Find the right AI agent for you</p>
       </div>
     </div>
   </header>
 
   <main class="max-w-3xl mx-auto px-4 py-6">
-    <!-- Intro -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-5 text-slate-600">
-      <strong class="text-slate-900">AI Agent Match</strong> helps you discover agents that fit the task you have in mind.
-      Search by what you want to do, then filter by platform. Each result shows how easy it is to set up so you can get started with confidence.
-    </div>
-
     <!-- Search & Filters -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm">
-      <input
-        type="search"
-        id="search"
-        placeholder="What do you want help with? (e.g. research, email, coding, calendar)"
-        class="w-full px-4 py-3 text-base border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-        autofocus
-      >
+    <div class="box p-5 mb-6">
+      <div class="search-wrap">
+        <input
+          type="search"
+          id="search"
+          placeholder="What do you want help with? (e.g. research, email, coding, calendar)"
+          class="search-input"
+          autofocus
+        >
+      </div>
 
       <!-- Platform filters -->
       <div class="flex flex-wrap gap-2 mt-4" id="filters">
-        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-teal-500 text-white" data-platform="all">All platforms</button>
-        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Grok Bots">Grok Bots</button>
-        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Muse">Muse</button>
-        <button class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" data-platform="Other">Other</button>
+        <button class="filter-btn chip is-active" data-platform="all">All platforms</button>
+        <button class="filter-btn chip" data-platform="Grok Bots">Grok Bots</button>
+        <button class="filter-btn chip" data-platform="Muse">Muse</button>
+        <button class="filter-btn chip" data-platform="Other">Other</button>
       </div>
 
       <!-- Example buttons -->
-      <div class="mt-4 text-sm text-slate-500">
+      <div class="mt-4 text-sm text-slate-600">
         Try:
-        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="research papers">research papers</button>
-        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="email inbox">email inbox</button>
-        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="coding help">coding help</button>
-        <button class="example-btn ml-2 px-3 py-1 bg-slate-100 rounded-full text-xs hover:bg-slate-200" data-q="daily summary">daily summary</button>
+        <button class="example-btn chip chip-sm" data-q="research papers">research papers</button>
+        <button class="example-btn chip chip-sm" data-q="email inbox">email inbox</button>
+        <button class="example-btn chip chip-sm" data-q="coding help">coding help</button>
+        <button class="example-btn chip chip-sm" data-q="daily summary">daily summary</button>
+        <button class="example-btn chip chip-sm" data-q="travel">travel</button>
       </div>
     </div>
 
-    <!-- Results -->
-    <div id="results" class="space-y-4"></div>
+    <!-- Intro (moved below the search block, 30% smaller) -->
+    <div class="box intro-box mb-6">
+      <strong class="text-slate-900">AI Agent Match</strong> helps you discover agents that fit the task you have in mind.
+      Search by what you want to do, then filter by platform. Each result shows how easy it is to set up so you can get started with confidence.
+      <div class="intro-note">List of agents refreshed daily</div>
+    </div>
+
+    <!-- Results: square blocks -->
+    <div id="results" class="agent-grid"></div>
   </main>
 
-  <footer class="text-center py-8 text-sm text-slate-400">
+  <footer class="text-center py-8 text-sm text-slate-800">
     AI Agent Match · Helping you feel comfortable choosing and using AI agents
   </footer>
 
@@ -81,6 +338,17 @@
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
     const safeUrl = u => /^https:\/\//i.test(String(u || "")) ? String(u) : "#";
+
+    // Shorten a description by 25% (keep the first 75%, ending on a whole word)
+    function trimDesc(text) {
+      const s = String(text ?? "").replace(/\s+/g, " ").trim();
+      if (s.length < 8) return s;
+      const keep = Math.floor(s.length * 0.75);
+      let cut = s.slice(0, keep);
+      const lastSpace = cut.lastIndexOf(" ");
+      if (lastSpace > keep * 0.6) cut = cut.slice(0, lastSpace);
+      return cut.replace(/[\s,;:.\-\u2013\u2014]+$/, "") + "\u2026";
+    }
 
     // Fallback sample data (used if the index fails to load)
     const fallbackAgents = [
@@ -167,56 +435,36 @@
     ];
 
     let agents = [];
+    const compactNum = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
     const easeLabels = { 1: "Easy", 2: "Medium", 3: "Advanced" };
     let currentPlatform = "all";
     let currentQuery = "";
-    const PAGE_SIZE = 40;          // results shown at a time (keeps phones fast)
-    let shownCount = PAGE_SIZE;
-
-    function easeClass(ease) {
-      if (ease === 1) return "bg-emerald-100 text-emerald-800";
-      if (ease === 2) return "bg-amber-100 text-amber-800";
-      return "bg-rose-100 text-rose-800";
-    }
 
     function render(agentsToShow) {
       const container = document.getElementById("results");
       if (!agentsToShow.length) {
-        container.innerHTML = '<div class="text-center text-slate-500 py-12">No agents matched that. Try a different phrase, filter, or one of the examples above.</div>';
+        container.innerHTML = '<div class="no-results">No agents matched that. Try a different phrase, filter, or one of the examples above.</div>';
         return;
       }
-      const visible = agentsToShow.slice(0, shownCount);
-      const cards = visible.map(a => {
+      container.innerHTML = agentsToShow.map(a => {
         const ease = Number(a.ease);
-        const installs = Number(a.installs) || 0;
-        const installsText = installs > 0 ? ` · ${installs.toLocaleString()} installs` : "";
-        const listed = a.listedOn ? ` · via ${esc(a.listedOn)}` : "";
-        const license = a.license ? ` · License: ${esc(a.license)}` : "";
-        const note = a.setupNote
-          ? `<p class="mt-3 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"><strong>Copy into Muse:</strong> ${esc(a.setupNote)}</p>`
+        const easeKey = (ease === 1 || ease === 2) ? ease : 3;
+        const fullDesc = String(a.description || a.tagline || "");
+        const shortDesc = trimDesc(fullDesc);
+        // Downloads are shown only when the source provides a number above zero
+        const count = Number(a.installs) || 0;
+        const downloads = count > 0
+          ? `<span class="agent-dl" title="${esc(count.toLocaleString())} downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M5 21h14"/></svg>${esc(compactNum.format(count))}<span class="sr-only"> downloads</span></span>`
           : "";
         return `
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-          <h2 class="text-lg font-semibold tracking-tight">${esc(a.name)}</h2>
-          <div class="flex flex-wrap items-center gap-2 mt-2 text-xs">
-            <span class="px-2.5 py-0.5 rounded-full font-medium ${easeClass(ease)}">${esc(easeLabels[ease] || "Unknown")} setup</span>
-            <span class="text-slate-500">${esc(a.source)}${installsText}${listed}${license}</span>
-          </div>
-          <p class="mt-2 font-medium text-slate-800">${esc(a.tagline)}</p>
-          <p class="mt-1 text-slate-600 text-sm">${esc(a.description)}</p>
-          ${note}
-          <a href="${esc(safeUrl(a.openUrl))}" target="_blank" rel="noopener noreferrer" class="inline-block mt-4 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">${esc(a.cta || "View / Add Agent")}</a>
-        </div>`;
+        <article class="agent-card box">
+          <h2 class="agent-name">${esc(a.name)}</h2>
+          <div class="agent-badges"><span class="ease ease-${easeKey}">${esc(easeLabels[ease] || "Unknown")}<span class="setup-word"> setup</span></span>${downloads}</div>
+          <div class="agent-desc" title="${esc(fullDesc)}"><p>${esc(shortDesc)}</p></div>
+          <div class="agent-meta">${esc(a.source)}</div>
+          <a href="${esc(safeUrl(a.openUrl))}" target="_blank" rel="noopener noreferrer" class="btn-primary agent-btn" aria-label="View or add ${esc(a.name)}">View / Add Agent</a>
+        </article>`;
       }).join("");
-      const remaining = agentsToShow.length - visible.length;
-      const more = remaining > 0
-        ? `<button id="show-more" class="w-full py-3 text-sm font-semibold text-teal-700 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50">Show more (${remaining.toLocaleString()} left)</button>`
-        : "";
-      container.innerHTML = cards + more;
-      const moreBtn = document.getElementById("show-more");
-      if (moreBtn) {
-        moreBtn.addEventListener("click", () => { shownCount += PAGE_SIZE; applyFilters(false); });
-      }
     }
 
     function rankValue(a) {
@@ -224,8 +472,7 @@
       return (Number(a.usefulness) || 0) * 1e6 + (Number(a.installs) || 0);
     }
 
-    function applyFilters(resetPaging = true) {
-      if (resetPaging) shownCount = PAGE_SIZE;
+    function applyFilters() {
       let filtered = [...agents];
       if (currentPlatform !== "all") {
         filtered = filtered.filter(a => a.source === currentPlatform);
@@ -277,12 +524,8 @@
 
     document.querySelectorAll(".filter-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".filter-btn").forEach(b => {
-          b.classList.remove("bg-teal-500", "text-white");
-          b.classList.add("bg-slate-100", "text-slate-700");
-        });
-        btn.classList.remove("bg-slate-100", "text-slate-700");
-        btn.classList.add("bg-teal-500", "text-white");
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
         currentPlatform = btn.dataset.platform;
         applyFilters();
       });
