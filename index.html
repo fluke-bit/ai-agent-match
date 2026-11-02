@@ -245,6 +245,14 @@
       color: #1e293b;
       padding: 3rem 0;
     }
+
+    /* ================= Footer: disclaimer + legal links ================= */
+    .site-footer { max-width: 48rem; margin: 0 auto; padding: 0 1rem 2rem; }
+    .footer-box { padding: 1rem 1.1rem; font-size: 0.75rem; line-height: 1.5; color: #334155; text-align: center; }
+    .footer-box p + p { margin-top: 0.6rem; }
+    .footer-links a { font-weight: 600; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+    .footer-links a:hover { color: var(--blue-hover); }
+    .footer-links .sep { margin: 0 0.5rem; color: #64748b; }
   </style>
 </head>
 <body class="text-slate-900 antialiased">
@@ -328,8 +336,18 @@
     <div id="results" class="agent-grid"></div>
   </main>
 
-  <footer class="text-center py-8 text-sm text-slate-800">
-    AI Agent Match · Helping you feel comfortable choosing and using AI agents
+  <footer class="site-footer">
+    <div class="box footer-box">
+      <p>
+        AI Agent Match is an independent directory. It is not affiliated with, endorsed by, or sponsored by
+        xAI (SpaceXAI), Meta, or any of the listed agents or their creators. Names and trademarks belong to their owners.
+        Agents can act on your behalf, so review what each one can access before you add it.
+      </p>
+      <p class="footer-links">
+        <a href="privacy.html">Privacy</a><span class="sep">·</span><a href="terms.html">Terms</a><span class="sep">·</span><a href="mailto:hello@aiagentmatch.app">Contact</a>
+      </p>
+      <p>© 2026 AI Agent Match · Helping you feel comfortable choosing and using AI agents</p>
+    </div>
   </footer>
 
   <script>

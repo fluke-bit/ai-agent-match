@@ -1,0 +1,97 @@
+/* =====================================================================
+   legal.css - styling for privacy.html and terms.html only.
+   Uses the same colors and look as the main page.
+   ===================================================================== */
+
+/* Small reset */
+*, ::before, ::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #a9b0ba;
+}
+body { margin: 0; position: relative; min-height: 100vh; color: #0f172a; -webkit-font-smoothing: antialiased; }
+h1, h2, p, ul, li { margin: 0; padding: 0; }
+h1, h2 { font-size: inherit; font-weight: inherit; }
+ul { list-style: none; }
+a { color: inherit; text-decoration: inherit; }
+svg, img { display: block; }
+
+/* Theme colors (same as the main page) */
+:root {
+  --blue: #1d4ed8;
+  --blue-hover: #1e40af;
+  --box-bg: #f1f3f5;
+  --box-outline: #5b6675;
+}
+
+/* Gradient grey background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(160deg, #d3d8de 0%, #a9b0ba 50%, #7d8693 100%);
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--box-bg);
+  border-bottom: 2px solid var(--box-outline);
+}
+.header-inner {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+.brand { display: flex; align-items: center; gap: 0.75rem; }
+.brand svg { width: 3rem; height: 3rem; flex-shrink: 0; }
+.brand-title { display: block; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; letter-spacing: -0.025em; color: #0f172a; }
+.brand-sub { display: block; font-size: 0.875rem; line-height: 1.25rem; color: #475569; }
+
+/* Page */
+.page { max-width: 48rem; margin: 0 auto; padding: 1.5rem 1rem; }
+.box {
+  background: var(--box-bg);
+  border: 2px solid var(--box-outline);
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.3rem 0.9rem;
+  background: var(--box-bg);
+  border: 2px solid var(--box-outline);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--blue);
+}
+.back-link:hover { color: var(--blue-hover); }
+
+/* Policy text */
+.legal { padding: 1.4rem; color: #1e293b; }
+@media (min-width: 640px) { .legal { padding: 2rem 2.25rem; } }
+.legal h1 { font-size: 1.6rem; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; }
+.legal .updated { margin-top: 0.4rem; font-size: 0.8125rem; color: #475569; }
+.legal h2 { margin-top: 1.7rem; font-size: 1.1rem; line-height: 1.3; font-weight: 700; color: #0f172a; }
+.legal p, .legal li { font-size: 0.95rem; line-height: 1.65; color: #334155; }
+.legal p { margin-top: 0.6rem; }
+.legal ul { margin-top: 0.4rem; padding-left: 1.25rem; list-style: disc; }
+.legal li { margin-top: 0.4rem; }
+.legal strong { font-weight: 700; }
+.legal a { font-weight: 600; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.legal a:hover { color: var(--blue-hover); }
+
+/* Footer */
+.site-footer { max-width: 48rem; margin: 0 auto; padding: 0 1rem 2rem; }
+.footer-box { padding: 1rem 1.1rem; font-size: 0.75rem; line-height: 1.5; color: #334155; text-align: center; }
+.footer-box p + p { margin-top: 0.6rem; }
+.footer-links a { font-weight: 600; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.footer-links a:hover { color: var(--blue-hover); }
+.footer-links .sep { margin: 0 0.5rem; color: #64748b; }
