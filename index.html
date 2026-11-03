@@ -143,12 +143,15 @@
     /* Intro box: the note on the left, a Tutorials button on the right (same row, no extra height) */
     .intro-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; }
     .intro-row .tut-btn {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.4rem 1rem; min-height: 2.25rem;
-      font-size: 0.85rem; line-height: 1.2;
-      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.45rem 1.1rem; min-height: 2.5rem;
+      font-size: 0.9rem; line-height: 1.2; font-weight: 700;
+      background: #dc2626; border-color: #991b1b; color: #fff;
+      box-shadow: 0 3px 8px rgba(153, 27, 27, 0.4);
     }
-    .intro-row .tut-btn svg { width: 0.85rem; height: 0.85rem; flex-shrink: 0; }
+    .intro-row .tut-btn:hover { background: #b91c1c; }
+    .intro-row .tut-btn:focus-visible { outline: 3px solid #991b1b; outline-offset: 2px; }
+    .intro-row .tut-btn svg { width: 0.95rem; height: 0.95rem; flex-shrink: 0; }
 
     .btn-primary {
       display: block;
