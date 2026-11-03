@@ -74,15 +74,16 @@
       color: var(--blue-outline);
     }
 
-    /* ================= Search bar: 20% larger + unfolds right to left on load ================= */
-    @keyframes search-unfold {
-      from { clip-path: inset(0 0 0 100%); opacity: 0.4; }
-      to   { clip-path: inset(0 0 0 0);    opacity: 1; }
+    /* ================= Search bar: 20% larger + rolls out left to right on load ================= */
+    @keyframes search-roll-out {
+      0%   { clip-path: inset(0 100% 0 0 round 0.75rem); transform: translateX(-2.5rem); opacity: 0; }
+      15%  { opacity: 1; }
+      100% { clip-path: inset(0 0 0 0 round 0.75rem);    transform: translateX(0);       opacity: 1; }
     }
     .search-wrap {
-      /* 'backwards' keeps it hidden during the delay and removes the clip afterward,
+      /* 'backwards' keeps it hidden during the delay; once finished, the clip is removed
          so the focus ring is never cut off. */
-      animation: search-unfold 1000ms cubic-bezier(0.22, 1, 0.36, 1) 350ms backwards;
+      animation: search-roll-out 1100ms cubic-bezier(0.22, 1, 0.36, 1) 300ms backwards;
     }
     .search-input {
       width: 100%;
@@ -262,6 +263,28 @@
       padding: 3rem 0;
     }
 
+    /* ================= "Showing 20 of 1,861 agents" + Show more button ================= */
+    .more-wrap { margin-top: 1.25rem; margin-bottom: 1.75rem; text-align: center; }
+    .more-wrap[hidden], .more-btn[hidden] { display: none !important; }
+    .more-status {
+      display: inline-block;
+      background: var(--box-bg);
+      border: 2px solid var(--box-outline);
+      border-radius: 9999px;
+      padding: 0.2rem 0.9rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    .more-btn {
+      display: block;
+      margin: 0.9rem auto 0;
+      min-width: 12rem;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
     /* ================= Footer: disclaimer + legal links ================= */
     .site-footer { max-width: 48rem; margin: 0 auto; padding: 0 1rem 2rem; }
     .footer-box { padding: 1rem 1.1rem; font-size: 0.75rem; line-height: 1.5; color: #334155; text-align: center; }
@@ -348,8 +371,13 @@
       <div class="intro-note">List of agents refreshed daily</div>
     </div>
 
-    <!-- Results: square blocks -->
+    <!-- Results: square blocks, 20 at a time -->
     <div id="results" class="agent-grid"></div>
+
+    <div id="more-wrap" class="more-wrap" hidden>
+      <p id="more-status" class="more-status" aria-live="polite"></p>
+      <button id="more-btn" type="button" class="btn-primary more-btn">Show 20 more</button>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -468,19 +496,21 @@
       }
     ];
 
-    let agents = [];
+    const PAGE_SIZE = 20;             // how many agents appear at a time
+    let agents = [];                  // everything loaded from agents-index.json
+    let currentList = [];             // everything that matches the current search + filter
+    let shown = 0;                    // how many of currentList are on screen
     const compactNum = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
     const easeLabels = { 1: "Easy", 2: "Medium", 3: "Advanced" };
     let currentPlatform = "all";
     let currentQuery = "";
 
-    function render(agentsToShow) {
-      const container = document.getElementById("results");
-      if (!agentsToShow.length) {
-        container.innerHTML = '<div class="no-results">No agents matched that. Try a different phrase, filter, or one of the examples above.</div>';
-        return;
-      }
-      container.innerHTML = agentsToShow.map(a => {
+    const resultsEl = document.getElementById("results");
+    const moreWrap = document.getElementById("more-wrap");
+    const moreStatus = document.getElementById("more-status");
+    const moreBtn = document.getElementById("more-btn");
+
+    function cardHTML(a) {
         const ease = Number(a.ease);
         const easeKey = (ease === 1 || ease === 2) ? ease : 3;
         const fullDesc = String(a.description || a.tagline || "");
@@ -498,7 +528,41 @@
           <div class="agent-meta">${esc(a.source)}</div>
           <a href="${esc(safeUrl(a.openUrl))}" target="_blank" rel="noopener noreferrer" class="btn-primary agent-btn" aria-label="View or add ${esc(a.name)}">View / Add Agent</a>
         </article>`;
-      }).join("");
+    }
+
+    // Add the next batch of agents to the page (appends, so nothing already shown is redrawn)
+    function showMore() {
+      const next = currentList.slice(shown, shown + PAGE_SIZE);
+      resultsEl.insertAdjacentHTML("beforeend", next.map(cardHTML).join(""));
+      shown += next.length;
+    }
+
+    // Update the "Showing X of Y" line and the Show more button
+    function updateMore() {
+      const total = currentList.length;
+      if (!total) { moreWrap.hidden = true; return; }
+      moreWrap.hidden = false;
+      if (shown < total) {
+        moreStatus.textContent = `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} agents`;
+        moreBtn.textContent = `Show ${Math.min(PAGE_SIZE, total - shown)} more`;
+        moreBtn.hidden = false;
+      } else {
+        moreStatus.textContent = total === 1 ? "Showing 1 agent" : `Showing all ${total.toLocaleString()} agents`;
+        moreBtn.hidden = true;
+      }
+    }
+
+    // Start over with a new list (after a search or filter change)
+    function render(list) {
+      currentList = list;
+      shown = 0;
+      resultsEl.innerHTML = "";
+      if (!list.length) {
+        resultsEl.innerHTML = '<div class="no-results">No agents matched that. Try a different phrase, filter, or one of the examples above.</div>';
+      } else {
+        showMore();
+      }
+      updateMore();
     }
 
     function rankValue(a) {
@@ -571,6 +635,17 @@
         currentQuery = btn.dataset.q;
         applyFilters();
       });
+    });
+
+    moreBtn.addEventListener("click", () => {
+      const firstNew = shown;
+      showMore();
+      updateMore();
+      // If that was the last batch the button disappears, so keep keyboard focus on the new results
+      if (moreBtn.hidden) {
+        const target = resultsEl.querySelectorAll(".agent-card")[firstNew];
+        if (target) target.querySelector("a").focus({ preventScroll: true });
+      }
     });
 
     // Start
