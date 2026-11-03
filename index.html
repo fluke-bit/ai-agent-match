@@ -296,6 +296,26 @@
       cursor: pointer;
     }
 
+    /* ================= Share + follow box ================= */
+    .share-box { padding: 1rem 1.1rem; margin-bottom: 1rem; text-align: center; }
+    .share-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .share-sub { font-size: 0.8125rem; color: #475569; margin-top: 0.15rem; }
+    .share-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem; min-height: 2.5rem;
+      border-radius: 9999px; font-size: 0.875rem; font-weight: 600;
+      background: #e2e6ea; color: #334155; border: 2px solid #8a94a3;
+      text-decoration: none; cursor: pointer; font-family: inherit;
+    }
+    .share-btn:hover { background: #d5dae0; }
+    .share-btn.primary { background: var(--blue); color: #fff; border-color: var(--blue-outline); }
+    .share-btn.primary:hover { background: var(--blue-hover); }
+    .share-btn svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+    .share-status { min-height: 1.25rem; margin-top: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: #166534; }
+    .follow-row { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 2px solid var(--box-outline); }
+    .share-box [hidden] { display: none !important; }
+
     /* ================= Footer: disclaimer + legal links ================= */
     .site-footer { max-width: 48rem; margin: 0 auto; padding: 0 1rem 2rem; }
     .footer-box { padding: 1rem 1.1rem; font-size: 0.75rem; line-height: 1.5; color: #334155; text-align: center; }
@@ -394,6 +414,26 @@
   </main>
 
   <footer class="site-footer">
+    <div class="box share-box" id="share-box">
+      <p class="share-title">Know someone who'd like this?</p>
+      <p class="share-sub">Share AI Agent Match with a friend or colleague.</p>
+      <div class="share-row" id="share-row">
+        <button type="button" class="share-btn primary" id="native-share" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6"/></svg>
+          Share
+        </button>
+        <button type="button" class="share-btn" id="copy-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>
+          Copy link
+        </button>
+        <!-- X, Facebook, WhatsApp, Reddit, LinkedIn and Email links are added by the script below -->
+      </div>
+      <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
+      <div class="follow-row" id="follow-row" hidden>
+        <p class="share-title">Follow AI Agent Match</p>
+        <div class="share-row" id="follow-links"></div>
+      </div>
+    </div>
     <div class="box footer-box">
       <p>
         AI Agent Match is an independent directory. It is not affiliated with, endorsed by, or sponsored by
@@ -649,6 +689,93 @@
         applyFilters();
       });
     });
+
+    // ================= Share and follow =================
+    // Put your channel addresses here (full https:// links). Leave a value empty to hide that button.
+    const FOLLOW_LINKS = [
+      { label: "YouTube", url: "" },
+      { label: "X", url: "" }
+    ];
+
+    const SHARE_URL = "https://aiagentmatch.app/";
+    const SHARE_TITLE = "AI Agent Match";
+    const SHARE_TEXT = "Find the right AI agent for you: search by what you want help with.";
+    const shareStatus = document.getElementById("share-status");
+
+    (function setupShare() {
+      const u = encodeURIComponent(SHARE_URL);
+      const t = encodeURIComponent(SHARE_TEXT);
+      const targets = [
+        ["X", `https://x.com/intent/post?text=${t}&url=${u}`],
+        ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${u}`],
+        ["WhatsApp", `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`],
+        ["Reddit", `https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent(SHARE_TITLE + ": " + SHARE_TEXT)}`],
+        ["LinkedIn", `https://www.linkedin.com/sharing/share-offsite/?url=${u}`],
+        ["Email", `mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(SHARE_TEXT + "\n\n" + SHARE_URL)}`]
+      ];
+      const row = document.getElementById("share-row");
+      targets.forEach(([label, href]) => {
+        const a = document.createElement("a");
+        a.className = "share-btn";
+        a.href = href;
+        a.textContent = label;
+        a.setAttribute("aria-label", label === "Email" ? "Share by email" : `Share on ${label}`);
+        if (!href.startsWith("mailto:")) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+        row.appendChild(a);
+      });
+
+      let statusTimer;
+      const say = msg => {
+        shareStatus.textContent = msg;
+        clearTimeout(statusTimer);
+        statusTimer = setTimeout(() => { shareStatus.textContent = ""; }, 3000);
+      };
+
+      // Phones and some browsers have a built-in share sheet: show a Share button only when it exists
+      const nativeBtn = document.getElementById("native-share");
+      if (navigator.share) {
+        nativeBtn.hidden = false;
+        nativeBtn.addEventListener("click", async () => {
+          try { await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL }); }
+          catch (err) { /* the person closed the share sheet: nothing to do */ }
+        });
+      }
+
+      document.getElementById("copy-link").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(SHARE_URL);
+          say("Link copied!");
+        } catch (err) {
+          // Older browsers: copy through a temporary text box
+          const box = document.createElement("textarea");
+          box.value = SHARE_URL;
+          box.setAttribute("readonly", "");
+          box.style.position = "fixed"; box.style.opacity = "0";
+          document.body.appendChild(box);
+          box.select();
+          let ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) {}
+          document.body.removeChild(box);
+          say(ok ? "Link copied!" : "Copy this link: " + SHARE_URL);
+        }
+      });
+
+      // Follow buttons (only the ones with an address filled in)
+      const follow = FOLLOW_LINKS.filter(f => f.url && safeUrl(f.url) !== "#");
+      if (follow.length) {
+        const wrap = document.getElementById("follow-links");
+        follow.forEach(f => {
+          const a = document.createElement("a");
+          a.className = "share-btn";
+          a.href = safeUrl(f.url);
+          a.target = "_blank"; a.rel = "noopener noreferrer";
+          a.textContent = f.label;
+          a.setAttribute("aria-label", `AI Agent Match on ${f.label}`);
+          wrap.appendChild(a);
+        });
+        document.getElementById("follow-row").hidden = false;
+      }
+    })();
 
     moreBtn.addEventListener("click", () => {
       const firstNew = shown;
