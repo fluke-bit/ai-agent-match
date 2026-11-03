@@ -140,6 +140,16 @@
     }
 
     /* ================= Primary button: strong blue with a distinct outline ================= */
+    /* Intro box: the note on the left, a Tutorials button on the right (same row, no extra height) */
+    .intro-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; }
+    .intro-row .tut-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 1rem; min-height: 2.25rem;
+      font-size: 0.85rem; line-height: 1.2;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.28);
+    }
+    .intro-row .tut-btn svg { width: 0.85rem; height: 0.85rem; flex-shrink: 0; }
+
     .btn-primary {
       display: block;
       text-align: center;
@@ -401,7 +411,13 @@
     <div class="box intro-box mb-6">
       <strong class="text-slate-900">AI Agent Match</strong> helps you discover agents that fit the task you have in mind.
       Search by what you want to do, then filter by platform. Each result shows how easy it is to set up so you can get started with confidence.
-      <div class="intro-note">List of agents refreshed daily</div>
+      <div class="intro-note intro-row">
+        <span>List of agents refreshed daily</span>
+        <a href="tutorials.html" class="btn-primary tut-btn" aria-label="Watch tutorial videos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12.5-7.5a1 1 0 000-1.72L8.5 3.64A1 1 0 007 4.5z" fill="currentColor"/></svg>
+          Tutorials
+        </a>
+      </div>
     </div>
 
     <!-- Results: square blocks, 20 at a time -->
@@ -441,7 +457,7 @@
         Agents can act on your behalf, so review what each one can access before you add it.
       </p>
       <p class="footer-links">
-        <a href="privacy.html">Privacy</a><span class="sep">·</span><a href="terms.html">Terms</a><span class="sep">·</span><a href="mailto:hello@aiagentmatch.app">Contact</a>
+        <a href="tutorials.html">Tutorials</a><span class="sep">·</span><a href="privacy.html">Privacy</a><span class="sep">·</span><a href="terms.html">Terms</a><span class="sep">·</span><a href="mailto:hello@aiagentmatch.app">Contact</a>
       </p>
       <p>© 2026 AI Agent Match · Helping you feel comfortable choosing and using AI agents</p>
     </div>
