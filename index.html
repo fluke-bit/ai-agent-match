@@ -74,16 +74,27 @@
       color: var(--blue-outline);
     }
 
-    /* ================= Search bar: 20% larger + rolls out left to right on load ================= */
+    /* ================= Search bar: 20% larger + rolls out left to right on load, with a red glow while it moves ================= */
     @keyframes search-roll-out {
-      0%   { clip-path: inset(0 100% 0 0 round 0.75rem); transform: translateX(-2.5rem); opacity: 0; }
+      /* The clip reaches 1.25rem past the bar on the top, bottom and left so the red glow is not cut off. */
+      0%   { clip-path: inset(-1.25rem 100% -1.25rem -1.25rem); transform: translateX(-2.5rem); opacity: 0; }
       15%  { opacity: 1; }
-      100% { clip-path: inset(0 0 0 0 round 0.75rem);    transform: translateX(0);       opacity: 1; }
+      100% { clip-path: inset(-1.25rem -1.25rem -1.25rem -1.25rem); transform: translateX(0); opacity: 1; }
+    }
+    @keyframes search-glow {
+      0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0), 0 0 0 0 rgba(220, 38, 38, 0); }
+      20%  { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.55), 0 0 18px 4px rgba(220, 38, 38, 0.5); }
+      75%  { box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.55), 0 0 18px 4px rgba(220, 38, 38, 0.5); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0), 0 0 0 0 rgba(220, 38, 38, 0); }
     }
     .search-wrap {
       /* 'backwards' keeps it hidden during the delay; once finished, the clip is removed
          so the focus ring is never cut off. */
-      animation: search-roll-out 1100ms cubic-bezier(0.22, 1, 0.36, 1) 300ms backwards;
+      animation: search-roll-out 1375ms cubic-bezier(0.22, 1, 0.36, 1) 300ms backwards;
+    }
+    .search-wrap .search-input {
+      /* Same timing as the roll-out. The red glow fades away at the end and the normal blue focus ring takes over. */
+      animation: search-glow 1375ms ease-in-out 300ms backwards;
     }
     .search-input {
       width: 100%;
@@ -101,7 +112,7 @@
       box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.35);
     }
     @media (prefers-reduced-motion: reduce) {
-      .search-wrap { animation: none; }
+      .search-wrap, .search-wrap .search-input { animation: none; }
     }
 
     /* ================= Chips (platform filters and examples) ================= */
