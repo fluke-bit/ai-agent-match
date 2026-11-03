@@ -1,0 +1,29 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AI Agent Match logo">
+  <defs>
+    <linearGradient id="lg-hex" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="45%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="lg-navy" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="lg-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <!-- silver hexagon frame -->
+  <path d="M50 5 L89 27.5 L89 72.5 L50 95 L11 72.5 L11 27.5 Z" fill="#f8fafc" stroke="url(#lg-hex)" stroke-width="5.5" stroke-linejoin="round"/>
+  <!-- two A's side by side; their inner legs meet in the middle so the pair also reads as an M -->
+  <path d="M19 74 L33 30 L50 58" fill="none" stroke="url(#lg-navy)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M81 74 L67 30 L50 58" fill="none" stroke="url(#lg-sky)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- handshake: two forearms (the crossbars of the A's) meeting in a clasp -->
+  <path d="M24 63 Q35 64 43 71" fill="none" stroke="#1e3a8a" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M76 63 Q65 64 57 71" fill="none" stroke="#2563eb" stroke-width="3.4" stroke-linecap="round"/>
+  <!-- left hand (navy) tucked under the right hand (bright blue) -->
+  <path d="M38.5 71 Q41 66.5 47 67.5 L56 72 Q57 79.5 50.5 81.5 Q42 82.5 38.5 71 Z" fill="#1e3a8a" stroke="#f1f5f9" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="M61.5 71 Q59 66.5 53 67.5 L44.5 72 Q43.5 79.5 49.5 81.5 Q58 82.5 61.5 71 Z" fill="#2563eb" stroke="#f1f5f9" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="M51.5 73.5 L55.5 77 M49.5 75.5 L53.5 79" stroke="#bae6fd" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>
