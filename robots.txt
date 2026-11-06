@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aiagentmatch.app/sitemap.xml
