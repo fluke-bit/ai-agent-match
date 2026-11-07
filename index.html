@@ -446,7 +446,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>
           Copy link
         </button>
-        <!-- X, Facebook, WhatsApp, Reddit, LinkedIn and Email links are added by the script below -->
+        <!-- X, Facebook, Reddit, LinkedIn and Email links are added by the script below -->
       </div>
       <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
       <div class="follow-row" id="follow-row" hidden>
@@ -728,7 +728,6 @@
       const targets = [
         ["X", `https://x.com/intent/post?text=${t}&url=${u}`],
         ["Facebook", `https://www.facebook.com/sharer/sharer.php?u=${u}`],
-        ["WhatsApp", `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`],
         ["Reddit", `https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent(SHARE_TITLE + ": " + SHARE_TEXT)}`],
         ["LinkedIn", `https://www.linkedin.com/sharing/share-offsite/?url=${u}`],
         ["Email", `mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(SHARE_TEXT + "\n\n" + SHARE_URL)}`]
